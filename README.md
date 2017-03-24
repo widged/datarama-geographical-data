@@ -10,7 +10,6 @@ How to download is not necessarily obvious. Click on the 3 vertical dot to pop a
 
 ![Download menu](steps/download-dataset.png)
 
-
 Choose a format that you can easily convert. Popular options are kml, shp, geojson.
 
 Most web-browser compatible mapping tools accept a very limited number of geographic formats. Most are fine with geojson. If your file is in kml or shp format, it is likely that you will have to convert it first.
@@ -75,6 +74,10 @@ Different options exist: d3js, leaflet, googlemap, cartoDB.
 
 The simplest is to use d3js. For instance:
 
+![d3js-map](steps/map-with-d3js.png)
+
+The code to display a geojson or topojson file is quite basic.
+
     var w = 1200, h = 800;
     var mapProjection = d3.geo.mercator().center([14.5,52.5]).scale(3000);
     var pathGenerator = d3.geo.path().mapProjection(mapProjection);
@@ -99,7 +102,7 @@ The simplest is to use d3js. For instance:
            .attr("d", pathGenerator);
     });
 
-Finding the centroid can be quite challenging, with a geojson file, you can use
+Finding the map centroid can be quite challenging. With a geojson file, you can use:
 
   function findTheCentroid(topology, w, h) {
     var scale = 2000;
