@@ -104,34 +104,34 @@ The code to display a geojson or topojson file is quite basic.
 
 Finding the map centroid can be quite challenging. With a geojson file, you can use:
 
-  function findTheCentroid(topology, w, h) {
-    var scale = 2000;
-    var offset = [250, 454.39346517537];
-    var project, path;
+    function findTheCentroid(topology, w, h) {
+      var scale = 2000;
+      var offset = [250, 454.39346517537];
+      var project, path;
 
-    var center = d3.geo.centroid(topology);
+      var center = d3.geo.centroid(topology);
 
-    if(!isNaN(center[0])) {
+      if(!isNaN(center[0])) {
 
-      //Define map projection
-      projection = d3.geo.mercator().center(center).scale(scale);
-      //Define path generator
+        //Define map projection
+        projection = d3.geo.mercator().center(center).scale(scale);
+        //Define path generator
+        path = d3.geo.path().projection(projection);
+
+        var bounds  = path.bounds(topology);
+        var hscale  = scale*w  / (bounds[1][0] - bounds[0][0]);
+        var vscale  = scale*h / (bounds[1][1] - bounds[0][1]);
+        scale   = (hscale < vscale) ? hscale : vscale;
+        offset  = [w - (bounds[0][0] + bounds[1][0])/2,
+                          h - (bounds[0][1] + bounds[1][1])/2];
+      } else {
+        center = [173.30113805495805, -41.39041654133352];
+      }
+
+      projection = d3.geo.mercator().center(center).scale(scale).translate(offset);
       path = d3.geo.path().projection(projection);
 
-      var bounds  = path.bounds(topology);
-      var hscale  = scale*w  / (bounds[1][0] - bounds[0][0]);
-      var vscale  = scale*h / (bounds[1][1] - bounds[0][1]);
-      scale   = (hscale < vscale) ? hscale : vscale;
-      offset  = [w - (bounds[0][0] + bounds[1][0])/2,
-                        h - (bounds[0][1] + bounds[1][1])/2];
-    } else {
-      center = [173.30113805495805, -41.39041654133352];
+      return path;
     }
-
-    projection = d3.geo.mercator().center(center).scale(scale).translate(offset);
-    path = d3.geo.path().projection(projection);
-
-    return path;
-  }
 
 Open index.html in a browser, for an example. Because we load data, we will need to run with a server. On a mac, you can double click on `server.command` to launch it. Alternatively, from the command line `python -m http.server`.
