@@ -8,7 +8,7 @@ You can use  https://data.govt.nz/ to look for datasets. For instance, if you lo
 
 How to download is not necessarily obvious. Click on the 3 vertical dot to pop a menu with a download option.
 
-![Download menu](steps/convert-geo-format.png)
+![Download menu](steps/download-dataset.png)
 
 
 Choose a format that you can easily convert. Popular options are kml, shp, geojson.
