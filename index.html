@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+body, html {
+  font-family: Roboto;
+}
+</style>
+<body>
+  <h1>NZ Wards 2016</h1>
+  <div>Simple demo of a plotting open nz data with d3js. Change in color reflect area size</div>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var fmt = "topojson";
+
+var w = 600;
+var h = 800;
+
+//Create SVG element
+var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+function findTheCentroid(json, w, h, useDefaults) {
+  var scale = 2000;
+  var offset = [300, 400];
+  var project, path;
+
+  var center = d3.geo.centroid(json);
+
+  if(!isNaN(center[0]) && !useDefaults && 3 === 4) {
+
+    //Define map projection
+    projection = d3.geo.mercator().center(center).scale(scale);
+    //Define path generator
+    path = d3.geo.path().projection(projection);
+
+    var bounds  = path.bounds(json);
+    var hscale  = scale*w  / (bounds[1][0] - bounds[0][0]);
+    var vscale  = scale*h / (bounds[1][1] - bounds[0][1]);
+    scale   = (hscale < vscale) ? hscale : vscale;
+    offset  = [w - (bounds[0][0] + bounds[1][0])/2,
+                      h - (bounds[0][1] + bounds[1][1])/2];
+  } else {
+    center = [173.30113805495805, -41.39041654133352];
+  }
+
+  // new projection
+  projection = d3.geo.mercator().center(center).scale(scale).translate(offset);
+  path = d3.geo.path().projection(projection);
+
+  return path;
+}
+
+function main() {
+  var c10 = d3.scale.category20()
+  var colorScale = d3.scale.linear().domain([1,20000])
+        .interpolate(d3.interpolateHcl)
+        .range(["white","#4169e1"]);
+
+  // Define the div for the tooltip
+  var div = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 1)
+      .style("position", "absolute")
+      .style("background-color", "#c4cfd4");
+
+  //Load in GeoJSON data
+  d3.json("data/wards-s" + (fmt === "geojson" ? ".geojson" : ".topojson"), function(json) {
+    var path = findTheCentroid(json, w, h, true);
+    var topology = (fmt === "geojson" ? json :  topojson.feature(json, json.objects["WARD2016_NAME"]));
+      //Bind data and create one path per GeoJSON feature
+      svg.selectAll("path")
+         // .data(json.features)
+         .data(topology.features)
+         .enter()
+         .append("path")
+
+         .attr("d", (d) => { var p = path(d); /* console.log(JSON.stringify(d), p); */ return p; })
+         .style("fill", (d, i) => {
+           var name = d.properties.Name;
+           var area = d.properties.AREA_SQ_KM;
+           return name === "Area Outside Ward" ? "#f3f3f3" : colorScale(Math.round(area));
+         })
+         .on("mouseover", function(d) {
+           var name = d.properties.Name;
+           var area = d.properties.AREA_SQ_KM;
+              // console.log(d.properties.Name, area, d3.event.pageX, d3.event.pageY)
+             div.transition()
+                 .duration(200)
+                 .style("opacity", 1);
+             div	.html(`<div>${name}</div><div>${area}</div>`)
+                 .style("left", (d3.event.pageX) + "px")
+                 .style("top", (d3.event.pageY - 28) + "px");
+             })
+         .on("mouseout", function(d) {
+             div.transition()
+                 .duration(500)
+                 .style("opacity", 1);
+         });
+
+  });
+}
+main();
+
+</script>
+</body>
+</html>
